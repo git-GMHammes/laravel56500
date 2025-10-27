@@ -134,25 +134,8 @@ if (!defined('REDIS_PASS_PRD')) {
     define('REDIS_PASS_PRD', 'Redis@Prod#123');
 }
 
-// echo base64_encode('habilidade07');
-// echo "<br/>";
-// echo base64_encode('Mi5tEri02025');
-// echo "<br/>";
-
 include_once __DIR__ . '/../vendor/laravel/framework/src/Illuminate/Support/Schutz.php';
 include_once __DIR__ . '/../vendor/laravel/framework/src/Illuminate/Collections/Bewacht.php';
-
-// echo "<pre>";
-// print_r($GLOBALS['_t']);
-// echo "</pre>";
-//
-// echo "<br/> C7B5116B46AE0B81CE9BDF2D66EA90E6: ". C7B5116B46AE0B81CE9BDF2D66EA90E6;
-// echo "<br/> BD93DC1551A50338B79A83F7AD2DED9F: ". BD93DC1551A50338B79A83F7AD2DED9F;
-// echo "<br/> D9FCE34569364C3489C63C7EDABA1066: ". D9FCE34569364C3489C63C7EDABA1066;
-// echo "<br/> B6A00A9C9E69A43A7A4A529A1F1720F1: ". B6A00A9C9E69A43A7A4A529A1F1720F1;
-// echo "<br/> B92DA7D919A2A25E7E58FFC9A388B4B6: ". B92DA7D919A2A25E7E58FFC9A388B4B6;
-// echo "<br/> AC29039EB1FC603EE31B1D8BBCFA5953: ". AC29039EB1FC603EE31B1D8BBCFA5953;
-exit("<br/>");
 
 if (!defined('AWS_ACCESS_KEY_TEST')) {
     define('AWS_ACCESS_KEY_TEST', 'AKIA_TEST_123456');
@@ -264,7 +247,6 @@ return [
         ],
 
         // conexão adicional para o banco remoto (KINGHOST) usando suas constantes ofuscadas
-        // conexão adicional para o banco remoto (KINGHOST) usando suas constantes ofuscadas
         'kinghost' => [
             'driver' => defined('C7B5116B46AE0B81CE9BDF2D66EA90E6') ? C7B5116B46AE0B81CE9BDF2D66EA90E6 : env('DB_CONNECTION', 'mysql'),
             'url' => env('DB_URL'),
@@ -274,8 +256,8 @@ return [
             'username' => defined('B92DA7D919A2A25E7E58FFC9A388B4B6') ? B92DA7D919A2A25E7E58FFC9A388B4B6 : env('DB_USERNAME', 'forge'),
             'password' => defined('AC29039EB1FC603EE31B1D8BBCFA5953') ? AC29039EB1FC603EE31B1D8BBCFA5953 : env('DB_PASSWORD', ''),
             'unix_socket' => env('DB_SOCKET', ''),
-            'charset' => env('DB_CHARSET', 'latin1'),
-            'collation' => env('DB_COLLATION', 'latin1_swedish_ci'),
+            'charset' => env('DB_CHARSET', 'utf8mb4'),
+            'collation' => env('DB_COLLATION', 'utf8mb4_unicode_ci'),
             'prefix' => '',
             'prefix_indexes' => true,
             'strict' => true,

@@ -4,11 +4,17 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
-class UserManagementModel  extends Model
+class UserManagementModel extends Model
 {
     use SoftDeletes;
 
+    /**
+     * Define qual conexão usar (KINGHOST)
+     */
+    protected $connection = 'kinghost';
     /**
      * Nome da tabela no banco de dados
      */
@@ -57,4 +63,45 @@ class UserManagementModel  extends Model
      * Nome da coluna de soft delete
      */
     const DELETED_AT = 'deleted_at';
+
+    /**
+     * Retorna informações detalhadas sobre as colunas da tabela
+     *
+     * @return array
+     */
+    public static function getTableColumns()
+    {
+        $instance = new static;
+        $connection = $instance->getConnectionName();
+        $tableName = $instance->getTable();
+        $columns = Schema::connection($connection)->getColumnListing($tableName);
+
+        $detailedColumns = [];
+
+        foreach ($columns as $column) {
+            $columnType = Schema::connection($connection)->getColumnType($tableName, $column);
+
+            $detailedColumns[] = [
+                'name' => $column,
+                'type' => $columnType,
+            ];
+        }
+
+        return [
+            'table' => $tableName,
+            'total_columns' => count($columns),
+            'columns' => $detailedColumns,
+        ];
+    }
+
+    /**
+     * Retorna apenas os nomes das colunas (versão simples)
+     *
+     * @return array
+     */
+    public static function getColumnNames()
+    {
+        $instance = new static;
+        return Schema::connection($instance->getConnectionName())->getColumnListing($instance->getTable());
+    }
 }

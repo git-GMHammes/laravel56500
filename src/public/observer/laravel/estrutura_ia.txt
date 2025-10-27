@@ -1,0 +1,101 @@
+html/
+├── app # Código da aplicação
+│   ├── Constants
+│   │   └── ContainerConstants.php
+│   ├── Http
+│   │   └── Controllers
+│   │       ├── Api
+│   │       │   └── V1
+│   │       └── Controller.php
+│   ├── Models
+│   │   ├── User.php
+│   │   └── UserManagementModel.php
+│   └── Providers
+│       └── AppServiceProvider.php
+├── bootstrap
+│   ├── cache
+│   ├── app.php
+│   └── providers.php
+├── config # Configurações
+│   ├── app.php
+│   ├── auth.php
+│   ├── cache.php
+│   ├── database.php
+│   ├── filesystems.php
+│   ├── logging.php
+│   ├── mail.php
+│   ├── queue.php
+│   ├── services.php
+│   └── session.php
+├── database # Migrations e seeds
+│   ├── factories
+│   │   └── UserFactory.php
+│   ├── migrations
+│   │   ├── 0001_01_01_000000_create_users_table.php
+│   │   ├── 0001_01_01_000001_create_cache_table.php
+│   │   ├── 0001_01_01_000002_create_jobs_table.php
+│   │   ├── 2025_10_23_000000_create_user_management_table.php
+│   │   ├── 2025_10_23_235307_rename_name_to_nome_in_user_management_table.php
+│   │   ├── 2025_10_24_001738_create_user_management_table.php
+│   │   └── 2025_10_24_004200_rename_name_to_nome_in_user_management_table.php
+│   ├── seeders
+│   │   └── DatabaseSeeder.php
+│   └── database.sqlite
+├── public # Arquivos públicos
+│   ├── observer
+│   │   └── laravel
+│   │       ├── estrutura_ia.txt
+│   │       └── index.php
+│   ├── .htaccess
+│   ├── favicon.ico
+│   ├── index.php
+│   └── robots.txt
+├── resources
+│   ├── css
+│   │   └── app.css
+│   ├── js
+│   │   ├── app.js
+│   │   └── bootstrap.js
+│   └── views
+│       └── welcome.blade.php
+├── routes # Rotas da API
+│   ├── api.php
+│   ├── console.php
+│   └── web.php
+├── storage # Arquivos de armazenamento
+│   ├── app # Código da aplicação
+│   │   ├── private
+│   │   └── public # Arquivos públicos
+│   ├── framework
+│   │   ├── cache
+│   │   ├── sessions
+│   │   ├── testing
+│   │   └── views
+│   └── logs
+├── tests
+│   ├── Feature
+│   │   └── ExampleTest.php
+│   ├── Unit
+│   │   └── ExampleTest.php
+│   └── TestCase.php
+├── vendor
+├── .editorconfig
+├── .env
+├── .env.example
+├── .gitattributes
+├── .gitignore
+├── README.md
+├── artisan
+├── composer.json
+├── composer.lock
+├── package.json
+├── phpunit.xml
+├── postcss.config.js
+├── tailwind.config.js
+└── vite.config.js
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Gerado em: 2025-10-26 20:59:52
+Diretório base: /var/www/html
+Ignorados: vendor, node_modules, .git, .idea, storage/logs, storage/framework/cache, storage/framework/sessions, storage/framework/views, bootstrap/cache
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
