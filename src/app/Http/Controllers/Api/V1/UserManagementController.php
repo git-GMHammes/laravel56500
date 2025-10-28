@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Controllers\Api\V1;
+namespace App\Http\Controllers\Api\v1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Helpers\ApiResponseHelper;
-use App\Models\UserManagementModel;
+use App\Models\v1\UserManagementModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -12,67 +12,77 @@ use Illuminate\Support\Facades\Log;
 
 class UserManagementController extends Controller
 {
-    /**
-     * Retorna informações sobre as colunas da tabela user_management
-     *
-     * GET /api/v1/users/columns
-     */
-    public function getColumns()
+    # GET /api/v1/users
+    # Query params: ?page=1&limit=15
+    # Autor: Gustavo Hammes
+    # @param Request $request
+    public function index(Request $request)
     {
-
         try {
-            $columnsInfo = UserManagementModel::getTableColumns();
+            // Pega o limite da query string ou usa 15 como padrão
+            $limit = $request->input('limit', 15);
+
+            // Valida se o limite é um número válido (entre 1 e 100)
+            if (!is_numeric($limit) || $limit < 1 || $limit > 100) {
+                $limit = 15;
+            }
+
+            // Busca os usuários com paginação
+            $users = UserManagementModel::paginate($limit);
 
             return ApiResponseHelper::success(
                 httpCode: 200,
-                message: 'Colunas da tabela recuperadas com sucesso',
-                dbReturn: $columnsInfo,
+                message: 'Usuários recuperados com sucesso',
+                dbReturn: $users,
                 tableName: 'user_management'
             );
 
         } catch (\Exception $e) {
-            Log::error('Erro ao buscar colunas da tabela: ' . $e->getMessage(), ['exception' => $e]);
+            Log::error('Erro ao listar usuários: ' . $e->getMessage(), ['exception' => $e]);
 
             return ApiResponseHelper::error(
                 httpCode: 500,
-                message: 'Erro ao buscar informações das colunas'
+                message: 'Erro ao listar usuários'
             );
         }
     }
 
-    /**
-     * Retorna apenas os nomes das colunas (versão simples)
-     *
-     * GET /api/v1/users/column-names
-     */
-    public function getColumnNames()
+    # GET /api/v1/users/{id}
+    # Autor: Gustavo Hammes
+    # @param int $id
+    public function show($id)
     {
-
         try {
-            $columnNames = UserManagementModel::getColumnNames();
+            // Busca o usuário pelo ID
+            $user = UserManagementModel::find($id);
+
+            // Se não encontrar o usuário
+            if (!$user) {
+                return ApiResponseHelper::error(
+                    httpCode: 404,
+                    message: 'Usuário não encontrado'
+                );
+            }
 
             return ApiResponseHelper::success(
                 httpCode: 200,
-                message: 'Nomes das colunas recuperados com sucesso',
-                dbReturn: $columnNames,
+                message: 'Usuário recuperado com sucesso',
+                dbReturn: $user,
                 tableName: 'user_management'
             );
 
         } catch (\Exception $e) {
-            Log::error('Erro ao buscar nomes das colunas: ' . $e->getMessage(), ['exception' => $e]);
+            Log::error('Erro ao buscar usuário: ' . $e->getMessage(), ['exception' => $e]);
 
             return ApiResponseHelper::error(
                 httpCode: 500,
-                message: 'Erro ao buscar nomes das colunas'
+                message: 'Erro ao buscar usuário'
             );
         }
     }
 
-    /**
-     * Cria um novo usuário no banco de dados
-     *
-     * POST /api/v1/users
-     */
+    # POST /api/v1/users
+    # Autor: Gustavo Hammes
     public function store(Request $request)
     {
         // Validação dos dados
@@ -163,6 +173,243 @@ class UserManagementController extends Controller
             return ApiResponseHelper::error(
                 httpCode: 500,
                 message: 'Erro ao criar usuário'
+            );
+        }
+    }
+
+    # PUT /api/v1/users/{id}
+    # Autor: Gustavo Hammes
+    # @param Request $request
+    # @param int $id
+    public function update(Request $request, $id)
+    {
+        try {
+            // Busca o usuário pelo ID
+            $user = UserManagementModel::find($id);
+
+            // Se não encontrar o usuário
+            if (!$user) {
+                return ApiResponseHelper::error(
+                    httpCode: 404,
+                    message: 'Usuário não encontrado'
+                );
+            }
+
+            // Validação dos dados (sem obrigatoriedade e com unique ignorando o próprio usuário)
+            $validator = Validator::make($request->all(), [
+                'name' => 'nullable|string|max:150',
+                'cpf' => 'nullable|string|max:50|unique:user_management,cpf,' . $id,
+                'whatsapp' => 'nullable|string|max:50',
+                'user' => 'nullable|string|max:50|unique:user_management,user,' . $id,
+                'password' => 'nullable|string|min:6|max:200',
+                'profile' => 'nullable|string|max:200',
+                'mail' => 'nullable|email|max:150|unique:user_management,mail,' . $id,
+                'phone' => 'nullable|string|max:50',
+                'date_birth' => 'nullable|date',
+                'zip_code' => 'nullable|string|max:50',
+                'address' => 'nullable|string|max:50',
+            ], [
+                // Mensagens personalizadas em português
+                'name.max' => 'O nome não pode ter mais de 150 caracteres',
+                'cpf.unique' => 'Este CPF já está cadastrado',
+                'user.unique' => 'Este nome de usuário já está em uso',
+                'password.min' => 'A senha deve ter no mínimo 6 caracteres',
+                'mail.email' => 'O e-mail deve ser válido',
+                'mail.unique' => 'Este e-mail já está cadastrado',
+                'date_birth.date' => 'A data de nascimento deve ser válida',
+            ]);
+
+            // Se a validação falhar
+            if ($validator->fails()) {
+                return ApiResponseHelper::validationError(
+                    validator: $validator,
+                    message: 'Dados inválidos para atualização de usuário'
+                );
+            }
+
+            // Filtra apenas os campos que foram enviados
+            $data = $request->only([
+                'name',
+                'cpf',
+                'whatsapp',
+                'user',
+                'password',
+                'profile',
+                'mail',
+                'phone',
+                'date_birth',
+                'zip_code',
+                'address',
+            ]);
+
+            // Se a senha foi enviada, faz o hash
+            if (isset($data['password'])) {
+                $data['password'] = Hash::make($data['password']);
+            }
+
+            // Atualiza o usuário
+            $user->update($data);
+
+            // Remove a senha do retorno
+            $user->makeHidden(['password']);
+
+            return ApiResponseHelper::success(
+                httpCode: 200,
+                message: 'Usuário atualizado com sucesso',
+                dbReturn: $user,
+                tableName: 'user_management'
+            );
+
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Erro específico de banco de dados
+            Log::error('Erro de banco ao atualizar usuário: ' . $e->getMessage(), [
+                'exception' => $e,
+                'sql' => $e->getSql() ?? null
+            ]);
+
+            return ApiResponseHelper::error(
+                httpCode: 500,
+                message: 'Erro ao atualizar usuário no banco de dados'
+            );
+
+        } catch (\Exception $e) {
+            // Erro genérico
+            Log::error('Erro ao atualizar usuário: ' . $e->getMessage(), ['exception' => $e]);
+
+            return ApiResponseHelper::error(
+                httpCode: 500,
+                message: 'Erro ao atualizar usuário'
+            );
+        }
+    }
+
+    # DELETE /api/v1/users/{id} (SOFT DELETE - Exclusão Lógica)
+    # Autor: Gustavo Hammes
+    # @param int $id
+    public function delete($id)
+    {
+        try {
+            // Busca o usuário pelo ID
+            $user = UserManagementModel::find($id);
+
+            // Se não encontrar o usuário
+            if (!$user) {
+                return ApiResponseHelper::error(
+                    httpCode: 404,
+                    message: 'Usuário não encontrado'
+                );
+            }
+
+            // Soft Delete - apenas preenche o campo deleted_at
+            $user->delete();
+
+            return ApiResponseHelper::success(
+                httpCode: 200,
+                message: 'Usuário removido com sucesso (exclusão lógica)',
+                dbReturn: [
+                    'id' => $user->id,
+                    'deleted_at' => $user->deleted_at
+                ],
+                tableName: 'user_management'
+            );
+
+        } catch (\Exception $e) {
+            Log::error('Erro ao remover usuário (soft delete): ' . $e->getMessage(), ['exception' => $e]);
+
+            return ApiResponseHelper::error(
+                httpCode: 500,
+                message: 'Erro ao remover usuário'
+            );
+        }
+    }
+
+    # DELETE /api/v1/users/{id}/force (HARD DELETE - Remove do banco)
+    # Autor: Gustavo Hammes
+    # @param int $id
+    public function destroy($id)
+    {
+        try {
+            // Busca o usuário pelo ID (incluindo os soft deleted)
+            $user = UserManagementModel::withTrashed()->find($id);
+
+            // Se não encontrar o usuário
+            if (!$user) {
+                return ApiResponseHelper::error(
+                    httpCode: 404,
+                    message: 'Usuário não encontrado'
+                );
+            }
+
+            // Guarda o ID antes de deletar
+            $userId = $user->id;
+
+            // Hard Delete - remove permanentemente do banco
+            $user->forceDelete();
+
+            return ApiResponseHelper::success(
+                httpCode: 200,
+                message: 'Usuário removido PERMANENTEMENTE do banco de dados',
+                dbReturn: [
+                    'id' => $userId,
+                    'status' => 'permanently_deleted'
+                ],
+                tableName: 'user_management'
+            );
+
+        } catch (\Exception $e) {
+            Log::error('Erro ao remover usuário permanentemente: ' . $e->getMessage(), ['exception' => $e]);
+
+            return ApiResponseHelper::error(
+                httpCode: 500,
+                message: 'Erro ao remover usuário permanentemente'
+            );
+        }
+    }
+
+    # GET /api/v1/users/columns
+    # Autor: Gustavo Hammes
+    public function getColumns()
+    {
+        try {
+            $columnsInfo = UserManagementModel::getTableColumns();
+
+            return ApiResponseHelper::success(
+                httpCode: 200,
+                message: 'Colunas da tabela recuperadas com sucesso',
+                dbReturn: $columnsInfo,
+                tableName: 'user_management'
+            );
+
+        } catch (\Exception $e) {
+            Log::error('Erro ao buscar colunas da tabela: ' . $e->getMessage(), ['exception' => $e]);
+
+            return ApiResponseHelper::error(
+                httpCode: 500,
+                message: 'Erro ao buscar informações das colunas'
+            );
+        }
+    }
+
+    # GET /api/v1/users/column-names
+    # Autor: Gustavo Hammes
+    public function getColumnNames()
+    {
+        try {
+            $columnNames = UserManagementModel::getColumnNames();
+
+            return ApiResponseHelper::success(
+                httpCode: 200,
+                message: 'Nomes das colunas recuperados com sucesso',
+                dbReturn: $columnNames,
+                tableName: 'user_management'
+            );
+
+        } catch (\Exception $e) {
+            Log::error('Erro ao buscar nomes das colunas: ' . $e->getMessage(), ['exception' => $e]);
+
+            return ApiResponseHelper::error(
+                httpCode: 500,
+                message: 'Erro ao buscar nomes das colunas'
             );
         }
     }

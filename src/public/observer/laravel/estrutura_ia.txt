@@ -3,13 +3,16 @@ html/
 │   ├── Constants
 │   │   └── ContainerConstants.php
 │   ├── Http
-│   │   └── Controllers
-│   │       ├── Api
-│   │       │   └── V1
-│   │       └── Controller.php
+│   │   ├── Controllers
+│   │   │   ├── Api
+│   │   │   │   └── v1
+│   │   │   └── Controller.php
+│   │   └── Helpers
+│   │       └── ApiResponseHelper.php
 │   ├── Models
-│   │   ├── User.php
-│   │   └── UserManagementModel.php
+│   │   ├── v1
+│   │   │   └── UserManagementModel.php
+│   │   └── User.php
 │   └── Providers
 │       └── AppServiceProvider.php
 ├── bootstrap
@@ -95,7 +98,7 @@ html/
 └── vite.config.js
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Gerado em: 2025-10-26 20:59:52
+Gerado em: 2025-10-28 00:42:50
 Diretório base: /var/www/html
 Ignorados: vendor, node_modules, .git, .idea, storage/logs, storage/framework/cache, storage/framework/sessions, storage/framework/views, bootstrap/cache
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
