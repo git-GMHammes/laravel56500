@@ -289,18 +289,19 @@ class UserManagementController extends Controller
     public function delete($id)
     {
         try {
-            // Busca o usuário pelo ID
+            // Busca APENAS usuários ativos (deleted_at = NULL)
             $user = UserManagementModel::find($id);
 
-            // Se não encontrar o usuário
+            // Se não encontrar o usuário ativo
             if (!$user) {
                 return ApiResponseHelper::error(
                     httpCode: 404,
-                    message: 'Usuário não encontrado'
+                    message: 'Usuário não encontrado ou já foi removido'
                 );
             }
 
-            // Soft Delete - apenas preenche o campo deleted_at
+            // SOFT DELETE - Executa: UPDATE user_management SET deleted_at = NOW() WHERE id = ?
+            // O registro PERMANECE no banco, apenas fica "marcado" como deletado
             $user->delete();
 
             return ApiResponseHelper::success(
@@ -308,13 +309,18 @@ class UserManagementController extends Controller
                 message: 'Usuário removido com sucesso (exclusão lógica)',
                 dbReturn: [
                     'id' => $user->id,
-                    'deleted_at' => $user->deleted_at
+                    'deleted_at' => $user->deleted_at,
+                    'status' => 'soft_deleted'
                 ],
                 tableName: 'user_management'
             );
 
         } catch (\Exception $e) {
-            Log::error('Erro ao remover usuário (soft delete): ' . $e->getMessage(), ['exception' => $e]);
+            Log::error('Erro ao remover usuário (soft delete): ' . $e->getMessage(), [
+                'exception' => $e,
+                'user_id' => $id,
+                'trace' => $e->getTraceAsString()
+            ]);
 
             return ApiResponseHelper::error(
                 httpCode: 500,
@@ -329,26 +335,28 @@ class UserManagementController extends Controller
     public function destroy($id)
     {
         try {
-            // Busca o usuário pelo ID (incluindo os soft deleted)
+            // Busca o usuário incluindo os que já foram soft deleted
+            // withTrashed() permite encontrar registros com deleted_at preenchido
             $user = UserManagementModel::withTrashed()->find($id);
 
-            // Se não encontrar o usuário
+            // Se não encontrar o usuário nem nos deletados
             if (!$user) {
                 return ApiResponseHelper::error(
                     httpCode: 404,
-                    message: 'Usuário não encontrado'
+                    message: 'Usuário não encontrado no banco de dados'
                 );
             }
 
-            // Guarda o ID antes de deletar
+            // Guarda o ID antes de deletar (pois após o delete o objeto não existe mais)
             $userId = $user->id;
 
-            // Hard Delete - remove permanentemente do banco
+            // HARD DELETE - Executa: DELETE FROM user_management WHERE id = ?
+            // O registro é PERMANENTEMENTE removido do banco de dados
             $user->forceDelete();
 
             return ApiResponseHelper::success(
                 httpCode: 200,
-                message: 'Usuário removido PERMANENTEMENTE do banco de dados',
+                message: '⚠️ Usuário removido PERMANENTEMENTE do banco de dados',
                 dbReturn: [
                     'id' => $userId,
                     'status' => 'permanently_deleted'
@@ -357,11 +365,66 @@ class UserManagementController extends Controller
             );
 
         } catch (\Exception $e) {
-            Log::error('Erro ao remover usuário permanentemente: ' . $e->getMessage(), ['exception' => $e]);
+            Log::error('Erro ao remover usuário permanentemente: ' . $e->getMessage(), [
+                'exception' => $e,
+                'user_id' => $id,
+                'trace' => $e->getTraceAsString()
+            ]);
 
             return ApiResponseHelper::error(
                 httpCode: 500,
                 message: 'Erro ao remover usuário permanentemente'
+            );
+        }
+    }
+
+    # DELETE /api/v1/clear (Remove PERMANENTEMENTE todos os registros soft deleted)
+    # Autor: Gustavo Hammes
+    public function clear()
+    {
+        try {
+            // Busca APENAS os registros soft deleted (deleted_at IS NOT NULL)
+            $softDeletedUsers = UserManagementModel::onlyTrashed()->get();
+
+            // Se não houver registros para limpar
+            if ($softDeletedUsers->isEmpty()) {
+                return ApiResponseHelper::success(
+                    httpCode: 200,
+                    message: 'Nenhum registro para limpar. Banco já está limpo!',
+                    dbReturn: [
+                        'total_cleared' => 0,
+                        'status' => 'nothing_to_clear'
+                    ],
+                    tableName: 'user_management'
+                );
+            }
+
+            // Conta quantos registros serão removidos
+            $totalToDelete = $softDeletedUsers->count();
+
+            // Remove PERMANENTEMENTE todos os registros soft deleted
+            // Executa: DELETE FROM user_management WHERE deleted_at IS NOT NULL
+            UserManagementModel::onlyTrashed()->forceDelete();
+
+            return ApiResponseHelper::success(
+                httpCode: 200,
+                message: "🧹 Limpeza concluída! {$totalToDelete} registro(s) removido(s) permanentemente do banco",
+                dbReturn: [
+                    'total_cleared' => $totalToDelete,
+                    'status' => 'cleanup_completed'
+                ],
+                tableName: 'user_management'
+            );
+
+        } catch (\Exception $e) {
+            Log::error('Erro ao executar limpeza (clear): ' . $e->getMessage(), [
+                'exception' => $e,
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return ApiResponseHelper::error(
+                httpCode: 500,
+                message: 'Erro ao executar limpeza do banco de dados'
             );
         }
     }

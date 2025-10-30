@@ -1,4 +1,5 @@
 # Limpeza Laravel
+cd C:\laragon\www\laravel56500\doc\
 docker exec -it laravel_php bash
 docker-compose exec php bash
 
