@@ -52,9 +52,17 @@ class UserManagementController extends Controller
     # @param int $id
     public function show($id)
     {
+        // Validação do ID
+        if (!is_numeric($id) || $id < 1) {
+            return ApiResponseHelper::error(
+                httpCode: 400,
+                message: 'ID inválido. Deve ser um número inteiro positivo'
+            );
+        }
+
         try {
             // Busca o usuário pelo ID
-            $user = UserManagementModel::find($id);
+            $user = UserManagementModel::withTrashed()->find($id);
 
             // Se não encontrar o usuário
             if (!$user) {
@@ -63,6 +71,9 @@ class UserManagementController extends Controller
                     message: 'Usuário não encontrado'
                 );
             }
+
+            // Adiciona um campo indicando se está deletado
+            $user->is_deleted = $user->trashed();
 
             return ApiResponseHelper::success(
                 httpCode: 200,

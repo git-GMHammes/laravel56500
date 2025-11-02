@@ -1,16 +1,31 @@
 <?php
 /**
- * Laravel Structure Viewer
- * Gera visualização da estrutura de diretórios do projeto
- * Executado de: C:\laragon\www\laravel56500\src\public\observer\laravel.php
+ * Laravel Structure Viewer (Versão Corrigida)
+ * --------------------------------------------
+ * Gera visualização da estrutura de diretórios do projeto Laravel.
+ * Executado de: C:\laragon\www\laravel56500\src\public\observer\laravel\index.php
+ *
+ * Corrigido para exibir corretamente subpastas e arquivos (ex: User, v1, etc.)
  */
 
 header('Content-Type: text/plain; charset=utf-8');
 
-// Caminho base do projeto (3 níveis acima de src/public/observer)
-$baseDir = dirname(dirname(dirname(__DIR__)));
+/**
+ * Caminho base do projeto
+ *
+ * ⚙️ Ajuste automático: sobe apenas até /html/
+ * O script é executado dentro de /src/public/observer/laravel
+ */
+$baseDir = realpath(__DIR__ . '/../../..' . DIRECTORY_SEPARATOR . 'html');
 
-// Diretórios e arquivos a ignorar
+// Se o diretório não existir, tenta usar um fallback
+if (!is_dir($baseDir)) {
+    $baseDir = realpath(__DIR__ . '/../../..');
+}
+
+/**
+ * Diretórios e arquivos a ignorar
+ */
 $ignore = [
     'vendor',
     'node_modules',
@@ -26,12 +41,23 @@ $ignore = [
 /**
  * Verifica se o caminho deve ser ignorado
  */
-function shouldIgnore($path, $ignore) {
+function shouldIgnore($path, $ignore): bool {
+    $normalizedPath = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $path);
     foreach ($ignore as $pattern) {
-        if (strpos($path, DIRECTORY_SEPARATOR . $pattern) !== false) {
+        $pattern = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $pattern);
+
+        // Correspondência exata
+        if ($normalizedPath === $pattern) {
             return true;
         }
-        if (strpos($path, $pattern . DIRECTORY_SEPARATOR) === 0) {
+
+        // Caminho começa com o padrão (ex: vendor/, storage/logs/)
+        if (str_starts_with($normalizedPath, $pattern . DIRECTORY_SEPARATOR)) {
+            return true;
+        }
+
+        // Caminho contém subdiretório ignorado (ex: src/vendor/)
+        if (strpos($normalizedPath, DIRECTORY_SEPARATOR . $pattern . DIRECTORY_SEPARATOR) !== false) {
             return true;
         }
     }
@@ -39,13 +65,12 @@ function shouldIgnore($path, $ignore) {
 }
 
 /**
- * Gera a estrutura de diretórios
+ * Gera a estrutura de diretórios recursivamente
  */
-function generateStructure($dir, $ignore, $prefix = '', $isLast = true) {
-    $result = '';
-    $items = [];
+function generateStructure($dir, $ignore, $prefix = '', $isLast = true): string {
+    global $baseDir;
 
-    // Ler diretório
+    $result = '';
     if (!is_dir($dir)) {
         return $result;
     }
@@ -55,16 +80,14 @@ function generateStructure($dir, $ignore, $prefix = '', $isLast = true) {
         return $result;
     }
 
-    // Filtrar . e ..
     $files = array_diff($files, ['.', '..']);
 
-    // Separar diretórios e arquivos
     $dirs = [];
     $regularFiles = [];
 
     foreach ($files as $file) {
         $path = $dir . DIRECTORY_SEPARATOR . $file;
-        $relativePath = str_replace($GLOBALS['baseDir'] . DIRECTORY_SEPARATOR, '', $path);
+        $relativePath = str_replace($baseDir . DIRECTORY_SEPARATOR, '', $path);
 
         if (shouldIgnore($relativePath, $ignore)) {
             continue;
@@ -77,64 +100,57 @@ function generateStructure($dir, $ignore, $prefix = '', $isLast = true) {
         }
     }
 
-    // Ordenar
     sort($dirs);
     sort($regularFiles);
-
-    // Combinar (diretórios primeiro)
     $items = array_merge($dirs, $regularFiles);
     $total = count($items);
 
     foreach ($items as $index => $item) {
         $isLastItem = ($index === $total - 1);
         $path = $dir . DIRECTORY_SEPARATOR . $item;
-        $relativePath = str_replace($GLOBALS['baseDir'] . DIRECTORY_SEPARATOR, '', $path);
+        $relativePath = str_replace($baseDir . DIRECTORY_SEPARATOR, '', $path);
 
-        // Desenhar item
         $connector = $isLastItem ? '└── ' : '├── ';
         $result .= $prefix . $connector . $item;
 
-        // Adicionar comentário se for diretório importante
-        if (is_dir($path)) {
-            $comments = [
-                'src' => '# Laravel será instalado aqui',
-                'docker' => '# Configurações Docker',
-                'storage' => '# Arquivos de armazenamento',
-                'public' => '# Arquivos públicos',
-                'app' => '# Código da aplicação',
-                'config' => '# Configurações',
-                'database' => '# Migrations e seeds',
-                'routes' => '# Rotas da API'
-            ];
+        // Comentários para pastas conhecidas
+        $comments = [
+            'app' => '# Código da aplicação',
+            'config' => '# Configurações',
+            'database' => '# Migrations e seeds',
+            'routes' => '# Rotas da API',
+            'storage' => '# Arquivos de armazenamento',
+            'public' => '# Arquivos públicos'
+        ];
 
-            if (isset($comments[$item])) {
-                $result .= ' ' . $comments[$item];
-            }
+        if (isset($comments[$item])) {
+            $result .= ' ' . $comments[$item];
+        }
 
-            $result .= "\n";
+        $result .= "\n";
 
-            // Recursão para subdiretórios (limitar profundidade)
-            $depth = substr_count($relativePath, DIRECTORY_SEPARATOR);
-            if ($depth < 4) {
-                $newPrefix = $prefix . ($isLastItem ? '    ' : '│   ');
-                $result .= generateStructure($path, $ignore, $newPrefix, $isLastItem);
-            }
-        } else {
-            $result .= "\n";
+        // Limita a profundidade (pode ajustar)
+        $depth = substr_count($relativePath, DIRECTORY_SEPARATOR);
+        if ($depth < 6 && is_dir($path)) {
+            $newPrefix = $prefix . ($isLastItem ? '    ' : '│   ');
+            $result .= generateStructure($path, $ignore, $newPrefix, $isLastItem);
         }
     }
 
     return $result;
 }
 
-// Obter nome do projeto
+/**
+ * Identifica o nome do projeto
+ */
 $projectName = basename($baseDir);
 
-// Gerar estrutura
+/**
+ * Exibe resultado
+ */
 echo "$projectName/\n";
 echo generateStructure($baseDir, $ignore);
 
-// Informações adicionais
 echo "\n";
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
 echo "Gerado em: " . date('Y-m-d H:i:s') . "\n";

@@ -53,7 +53,6 @@ Route::prefix('v1')->group(function () {
         # Autor: Gustavo Hammes
         Route::post('/', [UserManagementController::class, 'store']);
 
-
         # Rota: `{{www}}/api/v1/users/{id}` - Exibe um usuário específico
         # Necessita Token: Não
         # Autor: Gustavo Hammes
