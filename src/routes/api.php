@@ -1,93 +1,48 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\V1\ContatoController;
-use App\Http\Controllers\Api\V1\UserManagementController;
 
 
-# Rota: `/api/health` - Verifica status da API
-# Necessita Token: Não
-# Autor: Gustavo Hammes
-Route::get('/health', function () {
-    return response()->json([
-        "header" => ["http_code" => 200, "status" => "OK", "method" => "GET", "api_version" => "v1.0", "message" => "API funcionando"],
-        "result" => ["service" => "Laravel API", "version" => "1.0.0", "timestamp" => now()->toIso8601String()],
-        "metadata" => ["url_sequence" => ["api", "health"], "www" => url('/')]
-    ]);
-});
+ # ========================================
+ # API ROUTES - Estrutura Modular
+ # ========================================
 
+ # Este arquivo é o ponto de entrada principal para todas as rotas da API.
+ # As rotas estão organizadas em arquivos separados por contexto/módulo.
+
+ # Estrutura:
+ # routes/
+ # ├── api.php (este arquivo)
+ # └── api/
+ #     └── v1/
+ #         ├── health.php
+ #         ├── users.php
+ #         └── contatos.php
+
+ # Autor: Gustavo Hammes
+ # Data: 2025-11-02
+
+# ============================================
+# HEALTH CHECK - Rota de verificação da API
+# ============================================
+require __DIR__ . '/api/v1/health.php';
+
+# ============================================
+# API VERSION 1
+# ============================================
 Route::prefix('v1')->group(function () {
 
+    // Módulo de Contatos
+    require __DIR__ . '/api/v1/contatos.php';
 
-    # Rota: `{{www}}/api/v1/contatos` - Lista todos os contatos
-    # Necessita Token: Não
-    # Autor: Gustavo Hammes
-    Route::get('/contatos', [ContatoController::class, 'index']);
-
-
-    # Rota: `{{www}}/api/v1/contatos/{id}` - Exibe um contato específico
-    # Necessita Token: Não
-    # Autor: Gustavo Hammes
-    Route::get('/contatos/{id}', [ContatoController::class, 'show']);
-
-    Route::prefix('users')->group(function () {
-
-
-        # Rota: `{{www}}/api/v1/users/columns` - Informações das colunas
-        # Necessita Token: Não
-        # Autor: Gustavo Hammes
-        Route::get('/columns', [UserManagementController::class, 'getColumns']);
-
-        # Rota: `{{www}}/api/v1/users/column-names` - Nomes das colunas
-        # Necessita Token: Não
-        # Autor: Gustavo Hammes
-        Route::get('/column-names', [UserManagementController::class, 'getColumnNames']);
-
-        # Rota: `{{www}}/api/v1/users` - Lista todos os usuários
-        # Necessita Token: Não
-        # Autor: Gustavo Hammes
-        Route::get('/', [UserManagementController::class, 'index']);
-
-        # Rota: `{{www}}/api/v1/users` - Cria um novo usuário
-        # Necessita Token: Não
-        # Autor: Gustavo Hammes
-        Route::post('/', [UserManagementController::class, 'store']);
-
-        # Rota: `{{www}}/api/v1/users/{id}` - Exibe um usuário específico
-        # Necessita Token: Não
-        # Autor: Gustavo Hammes
-        Route::get('/{id}', [UserManagementController::class, 'show']);
-
-        # Rota: `{{www}}/api/v1/users/{id}` - Atualiza um usuário (completo)
-        # Necessita Token: Não
-        # Autor: Gustavo Hammes
-        Route::put('/{id}', [UserManagementController::class, 'update']);
-
-        # Rota: `{{www}}/api/v1/users/{id}` - Atualiza um usuário (parcial)
-        # Necessita Token: Não
-        # Autor: Gustavo Hammes
-        Route::patch('/{id}', [UserManagementController::class, 'update']);
-
-        # Rota: `{{www}}/api/v1/users/clear` - Remove PERMANENTEMENTE todos os registros soft deleted
-        # ⚠️ ATENÇÃO: Remove TODOS os registros marcados como deletados!
-        # Esta ação é IRREVERSÍVEL!
-        # Necessita Token: Não
-        # Autor: Gustavo Hammes
-        Route::delete('/clear', [UserManagementController::class, 'clear']);
-
-        # Rota: `{{www}}/api/v1/users/{id}/force` - Remove um usuário PERMANENTEMENTE (HARD DELETE)
-        # Remove o registro definitivamente do banco de dados
-        # ⚠️ ATENÇÃO: Esta ação é irreversível!
-        # Necessita Token: Não
-        # Autor: Gustavo Hammes
-        Route::delete('/{id}/force', [UserManagementController::class, 'destroy']);
-
-        # Rota: `{{www}}/api/v1/users/{id}` - Remove um usuário (SOFT DELETE - Exclusão Lógica)
-        # Preenche o campo deleted_at, mas mantém o registro no banco
-        # Necessita Token: Não
-        # Autor: Gustavo Hammes
-        Route::delete('/{id}', [UserManagementController::class, 'delete']);
-
-    });
+    // Módulo de Usuários
+    require __DIR__ . '/api/v1/users.php';
 
 });
+
+# ============================================
+# API VERSION 2 (Preparado para futuro)
+# ============================================
+# Route::prefix('v2')->group(function () {
+#     require __DIR__.'/api/v2/users.php';
+# });
