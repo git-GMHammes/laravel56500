@@ -6,17 +6,28 @@ html/
 │   │   ├── Controllers
 │   │   │   ├── Api
 │   │   │   │   └── v1
+│   │   │   │       ├── UserManagementController.md
+│   │   │   │       └── UserManagementController.php
 │   │   │   └── Controller.php
-│   │   └── Helpers
-│   │       └── ApiResponseHelper.php
+│   │   ├── Helpers
+│   │   │   ├── ApiResponseHelper.php
+│   │   │   └── DataSanitizerHelper.php
+│   │   └── Requests
+│   │       └── v1
+│   │           └── User
+│   │               ├── ShowRequest.php
+│   │               ├── StoreRequest.php
+│   │               └── UpdateRequest.php
 │   ├── Models
-│   │   ├── v1
-│   │   │   └── UserManagementModel.php
-│   │   └── User.php
-│   └── Providers
-│       └── AppServiceProvider.php
+│   │   └── v1
+│   │       └── UserManagementModel.php
+│   ├── Providers
+│   │   └── AppServiceProvider.php
+│   └── Services
+│       └── v1
+│           └── User
+│               └── UserManagementService.php
 ├── bootstrap
-│   ├── cache
 │   ├── app.php
 │   └── providers.php
 ├── config # Configurações
@@ -43,12 +54,19 @@ html/
 │   │   └── 2025_10_24_004200_rename_name_to_nome_in_user_management_table.php
 │   ├── seeders
 │   │   └── DatabaseSeeder.php
+│   ├── .gitignore
 │   └── database.sqlite
 ├── public # Arquivos públicos
 │   ├── observer
 │   │   └── laravel
-│   │       ├── estrutura_ia.txt
-│   │       └── index.php
+│   │       ├── estrutura1
+│   │       │   └── index.php
+│   │       ├── estrutura2
+│   │       └── estrutura_ia.txt
+│   ├── test
+│   │   ├── test-sanitizer.php
+│   │   ├── test-show-request.php
+│   │   └── test-store-request.php
 │   ├── .htaccess
 │   ├── favicon.ico
 │   ├── index.php
@@ -62,26 +80,32 @@ html/
 │   └── views
 │       └── welcome.blade.php
 ├── routes # Rotas da API
+│   ├── api
+│   │   └── v1
+│   │       ├── api.md
+│   │       ├── health.php
+│   │       └── users.php
+│   ├── api.bkp
 │   ├── api.php
 │   ├── console.php
 │   └── web.php
 ├── storage # Arquivos de armazenamento
 │   ├── app # Código da aplicação
 │   │   ├── private
-│   │   └── public # Arquivos públicos
-│   ├── framework
-│   │   ├── cache
-│   │   ├── sessions
-│   │   ├── testing
-│   │   └── views
-│   └── logs
+│   │   │   └── .gitignore
+│   │   ├── public # Arquivos públicos
+│   │   │   └── .gitignore
+│   │   └── .gitignore
+│   └── framework
+│       ├── testing
+│       │   └── .gitignore
+│       └── .gitignore
 ├── tests
 │   ├── Feature
 │   │   └── ExampleTest.php
 │   ├── Unit
 │   │   └── ExampleTest.php
 │   └── TestCase.php
-├── vendor
 ├── .editorconfig
 ├── .env
 ├── .env.example
@@ -98,7 +122,7 @@ html/
 └── vite.config.js
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Gerado em: 2025-10-28 00:42:50
+Gerado em: 2025-11-10 01:10:41
 Diretório base: /var/www/html
 Ignorados: vendor, node_modules, .git, .idea, storage/logs, storage/framework/cache, storage/framework/sessions, storage/framework/views, bootstrap/cache
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

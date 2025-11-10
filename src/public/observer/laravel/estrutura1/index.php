@@ -16,11 +16,11 @@ header('Content-Type: text/plain; charset=utf-8');
  * ⚙️ Ajuste automático: sobe apenas até /html/
  * O script é executado dentro de /src/public/observer/laravel
  */
-$baseDir = realpath(__DIR__ . '/../../..' . DIRECTORY_SEPARATOR . 'html');
+$baseDir = realpath(__DIR__ . '/../../../..' . DIRECTORY_SEPARATOR . 'html');
 
 // Se o diretório não existir, tenta usar um fallback
 if (!is_dir($baseDir)) {
-    $baseDir = realpath(__DIR__ . '/../../..');
+    $baseDir = realpath(__DIR__ . '/../../../..');
 }
 
 /**
