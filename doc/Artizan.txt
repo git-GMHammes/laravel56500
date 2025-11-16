@@ -1,8 +1,9 @@
 # Limpeza Laravel
-cd C:\laragon\www\laravel56500\doc\
+
+cd C:\laragon\www\laravel56400
 docker exec -it laravel_php bash
 docker-compose exec php bash
-
+ 
 php artisan optimize:clear
 rm -rf bootstrap/cache/*.php
 rm -rf storage/framework/cache/data/*

@@ -185,7 +185,6 @@ if (!defined('BACKUP_PATH_SEG')) {
     define('BACKUP_PATH_SEG', '/mnt/secure/backup');
 }
 
-
 return [
 
     /*
@@ -212,7 +211,6 @@ return [
     | is supported by Laravel. You're free to add / remove connections.
     |
     */
-
     'connections' => [
 
         'sqlite' => [
@@ -227,13 +225,13 @@ return [
         ],
 
         'mysql' => [
-            'driver' => C7B5116B46AE0B81CE9BDF2D66EA90E6,
+            'driver' => env('DB_CONNECTION', 'mysql'),
             'url' => env('DB_URL'),
-            'host' => env('DB_HOST', BD93DC1551A50338B79A83F7AD2DED9F),
-            'port' => env('DB_PORT', D9FCE34569364C3489C63C7EDABA1066),
-            'database' => env('DB_DATABASE', B6A00A9C9E69A43A7A4A529A1F1720F1),
-            'username' => env('DB_USERNAME', B92DA7D919A2A25E7E58FFC9A388B4B6),
-            'password' => env('DB_PASSWORD', AC29039EB1FC603EE31B1D8BBCFA5953),
+            'host' => env('DB_HOST', '127.0.0.1'),
+            'port' => env('DB_PORT', '3306'),
+            'database' => env('DB_DATABASE', 'forge'),
+            'username' => env('DB_USERNAME', 'forge'),
+            'password' => env('DB_PASSWORD', ''),
             'unix_socket' => env('DB_SOCKET', ''),
             'charset' => env('DB_CHARSET', 'utf8mb4'),
             'collation' => env('DB_COLLATION', 'utf8mb4_unicode_ci'),

@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Log;
 # - Chamadas ao Model
 # - Tratamento de erros de negócio
 # @author Gustavo Hammes
-# @version 1.0.0
+# @version 2.0.0 (Adicionados métodos para trabalhar com registros deletados)
 class UserManagementService
 {
     # Model de usuário
@@ -46,6 +46,38 @@ class UserManagementService
         return $this->model->paginate($limit);
     }
 
+    # Lista TODOS os usuários com paginação (ATIVOS + DELETADOS)
+    # Retorna tanto usuários ativos quanto soft deleted
+    # @param int $limit Quantidade de registros por página (1-100)
+    # @return LengthAwarePaginator
+    # @example
+    # $users = $service->getAllUsersWithTrashed(15);
+    # // Retorna 15 usuários por página (ativos e deletados)
+    public function getAllUsersWithTrashed(int $limit = 15): LengthAwarePaginator
+    {
+        // Valida o limite (entre 1 e 100)
+        $limit = max(1, min(100, $limit));
+
+        // Retorna usuários paginados incluindo soft deleted
+        return $this->model->withTrashed()->paginate($limit);
+    }
+
+    # Lista APENAS usuários DELETADOS com paginação
+    # Retorna somente registros com deleted_at preenchido
+    # @param int $limit Quantidade de registros por página (1-100)
+    # @return LengthAwarePaginator
+    # @example
+    # $users = $service->getOnlyDeletedUsers(15);
+    # // Retorna 15 usuários deletados por página
+    public function getOnlyDeletedUsers(int $limit = 15): LengthAwarePaginator
+    {
+        // Valida o limite (entre 1 e 100)
+        $limit = max(1, min(100, $limit));
+
+        // Retorna APENAS usuários soft deleted
+        return $this->model->onlyTrashed()->paginate($limit);
+    }
+
     # Busca um usuário específico por ID
     # Retorna apenas se o usuário estiver ATIVO (não soft deleted)
     # @param int $id ID do usuário
@@ -59,6 +91,20 @@ class UserManagementService
     public function getUserById(int $id): ?UserManagementModel
     {
         return $this->model->find($id);
+    }
+
+    # Busca um usuário específico por ID (ATIVO OU DELETADO)
+    # Retorna o usuário mesmo se estiver soft deleted
+    # @param int $id ID do usuário
+    # @return UserManagementModel|null Usuário encontrado ou null
+    # @example
+    # $user = $service->getUserByIdWithTrashed(5);
+    # if ($user) {
+    #     echo $user->deleted_at ? "Deletado" : "Ativo";
+    # }
+    public function getUserByIdWithTrashed(int $id): ?UserManagementModel
+    {
+        return $this->model->withTrashed()->find($id);
     }
 
     # Cria um novo usuário

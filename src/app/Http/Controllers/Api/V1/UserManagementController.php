@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\Log;
 # - Helper: Sanitização de dados
 # - Model: Persistência no banco
 # @author Gustavo Hammes
-# @version 2.0.0 (Refatorado com arquitetura em camadas)
+# @version 2.1.0 (Adicionados métodos para trabalhar com registros deletados)
 class UserManagementController extends Controller
 {
     # Service de gerenciamento de usuários
@@ -68,6 +68,74 @@ class UserManagementController extends Controller
         }
     }
 
+    # Lista TODOS os usuários com paginação (ATIVOS + DELETADOS)
+    # GET /api/v1/users/with-trashed
+    # Query params: ?page=1&limit=15
+    # @param Request $request
+    # @return \Illuminate\Http\JsonResponse
+    # @author Gustavo Hammes
+    public function indexWithTrashed(Request $request)
+    {
+        try {
+            $limit = (int) $request->input('limit', 15);
+
+            // Busca todos os usuários (ativos e deletados)
+            $users = $this->userService->getAllUsersWithTrashed($limit);
+
+            return ApiResponseHelper::success(
+                httpCode: 200,
+                message: 'Todos os usuários recuperados (ativos e deletados)',
+                dbReturn: $users,
+                tableName: 'user_management'
+            );
+
+        } catch (\Exception $e) {
+            Log::error('Erro ao listar usuários com deletados', [
+                'exception' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return ApiResponseHelper::error(
+                httpCode: 500,
+                message: 'Erro ao listar usuários'
+            );
+        }
+    }
+
+    # Lista APENAS usuários DELETADOS com paginação
+    # GET /api/v1/users/only-trashed
+    # Query params: ?page=1&limit=15
+    # @param Request $request
+    # @return \Illuminate\Http\JsonResponse
+    # @author Gustavo Hammes
+    public function indexOnlyTrashed(Request $request)
+    {
+        try {
+            $limit = (int) $request->input('limit', 15);
+
+            // Busca apenas usuários deletados
+            $users = $this->userService->getOnlyDeletedUsers($limit);
+
+            return ApiResponseHelper::success(
+                httpCode: 200,
+                message: 'Usuários deletados recuperados com sucesso',
+                dbReturn: $users,
+                tableName: 'user_management'
+            );
+
+        } catch (\Exception $e) {
+            Log::error('Erro ao listar usuários deletados', [
+                'exception' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return ApiResponseHelper::error(
+                httpCode: 500,
+                message: 'Erro ao listar usuários deletados'
+            );
+        }
+    }
+
     # Exibe um usuário específico
     # GET /api/v1/users/{id}
     # @param ShowRequest $request Request com validação automática do ID
@@ -96,6 +164,45 @@ class UserManagementController extends Controller
 
         } catch (\Exception $e) {
             Log::error('Erro ao buscar usuário', [
+                'exception' => $e->getMessage(),
+                'id' => $id
+            ]);
+
+            return ApiResponseHelper::error(
+                httpCode: 500,
+                message: 'Erro ao buscar usuário'
+            );
+        }
+    }
+
+    # Exibe um usuário específico (ATIVO OU DELETADO)
+    # GET /api/v1/users/{id}/with-trashed
+    # @param ShowRequest $request Request com validação automática do ID
+    # @param int $id ID do usuário
+    # @return \Illuminate\Http\JsonResponse
+    # @author Gustavo Hammes
+    public function showWithTrashed(ShowRequest $request, $id)
+    {
+        try {
+            // ID já foi validado automaticamente pelo ShowRequest!
+            $user = $this->userService->getUserByIdWithTrashed($id);
+
+            if (!$user) {
+                return ApiResponseHelper::error(
+                    httpCode: 404,
+                    message: 'Usuário não encontrado'
+                );
+            }
+
+            return ApiResponseHelper::success(
+                httpCode: 200,
+                message: 'Usuário recuperado com sucesso (incluindo deletados)',
+                dbReturn: $user,
+                tableName: 'user_management'
+            );
+
+        } catch (\Exception $e) {
+            Log::error('Erro ao buscar usuário (incluindo deletados)', [
                 'exception' => $e->getMessage(),
                 'id' => $id
             ]);

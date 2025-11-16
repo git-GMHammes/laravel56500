@@ -32,9 +32,6 @@ require __DIR__ . '/api/v1/health.php';
 # ============================================
 Route::prefix('v1')->group(function () {
 
-    // Módulo de Contatos
-    require __DIR__ . '/api/v1/contatos.php';
-
     // Módulo de Usuários
     require __DIR__ . '/api/v1/users.php';
 

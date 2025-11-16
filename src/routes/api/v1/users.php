@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\V1\UserManagementController;
 # Base URL: /api/v1/users
 #
 # Autor: Gustavo Hammes
+# Versão: 2.0.0 (Adicionadas rotas para trabalhar com registros deletados)
 
 
 Route::prefix('users')->name('api.v1.users.')->group(function () {
@@ -21,17 +22,28 @@ Route::prefix('users')->name('api.v1.users.')->group(function () {
 
     # GET /api/v1/users/columns
     # Retorna informações detalhadas das colunas da tabela
-    # Necessita Token: Não
-    # @return \Illuminate\Http\JsonResponse
     Route::get('/columns', [UserManagementController::class, 'getColumns'])
         ->name('columns');
 
     # GET /api/v1/users/column-names
     # Retorna apenas os nomes das colunas
-    # Necessita Token: Não
-    # @return \Illuminate\Http\JsonResponse
     Route::get('/column-names', [UserManagementController::class, 'getColumnNames'])
         ->name('column-names');
+
+
+    # ============================================
+    # ROTAS PARA REGISTROS DELETADOS (NOVAS)
+    # ============================================
+
+    # GET /api/v1/users/with-trashed
+    # Lista TODOS os usuários (ATIVOS + DELETADOS)
+    Route::get('/with-trashed', [UserManagementController::class, 'indexWithTrashed'])
+        ->name('with-trashed');
+
+    # GET /api/v1/users/only-trashed
+    # Lista APENAS usuários DELETADOS
+    Route::get('/only-trashed', [UserManagementController::class, 'indexOnlyTrashed'])
+        ->name('only-trashed');
 
 
     # ============================================
@@ -39,51 +51,33 @@ Route::prefix('users')->name('api.v1.users.')->group(function () {
     # ============================================
 
     # GET /api/v1/users
-    # Lista todos os usuários
-    # Necessita Token: Não
-    # @queryParam page int Número da página (opcional)
-    # @queryParam per_page int Itens por página (opcional)
-    # @return \Illuminate\Http\JsonResponse
+    # Lista todos os usuários ATIVOS
     Route::get('/', [UserManagementController::class, 'index'])
         ->name('index');
 
     # POST /api/v1/users
     # Cria um novo usuário
-    # Necessita Token: Não
-    # @bodyParam nome string required Nome do usuário
-    # @bodyParam email string required Email do usuário
-    # @bodyParam password string required Senha do usuário
-    # @return \Illuminate\Http\JsonResponse
     Route::post('/', [UserManagementController::class, 'store'])
         ->name('store');
 
+    # GET /api/v1/users/{id}/with-trashed
+    # Exibe um usuário específico (ATIVO OU DELETADO)
+    Route::get('/{id}/with-trashed', [UserManagementController::class, 'showWithTrashed'])
+        ->name('show-with-trashed');
+
     # GET /api/v1/users/{id}
-    # Exibe um usuário específico
-    # Necessita Token: Não
-    # @urlParam id int required ID do usuário
-    # @return \Illuminate\Http\JsonResponse
+    # Exibe um usuário específico (APENAS ATIVOS)
     Route::get('/{id}', [UserManagementController::class, 'show'])
         ->name('show');
 
     # PUT /api/v1/users/{id}
-    # Atualiza um usuário completo (substitui todos os campos)
-    # Necessita Token: Não
-    # @urlParam id int required ID do usuário
-    # @bodyParam nome string required Nome do usuário
-    # @bodyParam email string required Email do usuário
-    # @bodyParam password string optional Senha do usuário
-    # @return \Illuminate\Http\JsonResponse
+    # Atualiza um usuário completo
     Route::put('/{id}', [UserManagementController::class, 'update'])
         ->name('update');
 
     # PATCH /api/v1/users/{id}
-    # Atualiza um usuário parcialmente (atualiza apenas campos enviados)
-    # Necessita Token: Não
-    # @urlParam id int required ID do usuário
-    # @bodyParam nome string optional Nome do usuário
-    # @bodyParam email string optional Email do usuário
-    # @bodyParam password string optional Senha do usuário
-    # @return \Illuminate\Http\JsonResponse    Route::patch('/{id}', [UserManagementController::class, 'update'])
+    # Atualiza um usuário parcialmente
+    Route::patch('/{id}', [UserManagementController::class, 'update'])
         ->name('patch');
 
     # ============================================
@@ -91,31 +85,18 @@ Route::prefix('users')->name('api.v1.users.')->group(function () {
     # ============================================
 
     # DELETE /api/v1/users/{id}
-    # Remove um usuário (SOFT DELETE - Exclusão Lógica)
-    # Preenche o campo deleted_at, mantendo o registro no banco
-    # Necessita Token: Não
-    # ⚠️ ATENÇÃO: O registro será marcado como deletado mas não removido
-    # @urlParam id int required ID do usuário
-    # @return \Illuminate\Http\JsonResponse    Route::delete('/{id}', [UserManagementController::class, 'delete'])
+    # Remove um usuário (SOFT DELETE)
+    Route::delete('/{id}', [UserManagementController::class, 'delete'])
         ->name('delete');
 
     # DELETE /api/v1/users/{id}/force
     # Remove um usuário PERMANENTEMENTE (HARD DELETE)
-    # Remove o registro definitivamente do banco de dados
-    # Necessita Token: Não
-    # ⚠️ ATENÇÃO: Esta ação é IRREVERSÍVEL!
-    # O registro será completamente removido do banco de dados
-    # @urlParam id int required ID do usuário
-    # @return \Illuminate\Http\JsonResponse    Route::delete('/{id}/force', [UserManagementController::class, 'destroy'])
+    Route::delete('/{id}/force', [UserManagementController::class, 'destroy'])
         ->name('force-delete');
 
     # DELETE /api/v1/users/clear
     # Remove PERMANENTEMENTE todos os registros soft deleted
-    # Necessita Token: Não
-    # ⚠️ ATENÇÃO MÁXIMA: Remove TODOS os registros marcados como deletados!
-    # Esta ação é IRREVERSÍVEL e afeta múltiplos registros!
-    # Use com extremo cuidado!
-    # @return \Illuminate\Http\JsonResponse    Route::delete('/clear', [UserManagementController::class, 'clear'])
+    Route::delete('/clear', [UserManagementController::class, 'clear'])
         ->name('clear');
 
 });
