@@ -185,6 +185,8 @@ if (!defined('BACKUP_PATH_SEG')) {
     define('BACKUP_PATH_SEG', '/mnt/secure/backup');
 }
 
+// dd('EXIT');
+
 return [
 
     /*
@@ -245,21 +247,42 @@ return [
         ],
 
         // conexão adicional para o banco remoto (KINGHOST) usando suas constantes ofuscadas
+        // 'kinghost' => [
+            // 'driver' => defined('C7B5116B46AE0B81CE9BDF2D66EA90E6') ? C7B5116B46AE0B81CE9BDF2D66EA90E6 : env('DB_CONNECTION', 'mysql'),
+            // 'url' => env('DB_URL'),
+            // 'host' => defined('BD93DC1551A50338B79A83F7AD2DED9F') ? BD93DC1551A50338B79A83F7AD2DED9F : env('DB_HOST', '127.0.0.1'),
+            // 'port' => defined('D9FCE34569364C3489C63C7EDABA1066') ? D9FCE34569364C3489C63C7EDABA1066 : env('DB_PORT', '3306'),
+            // 'database' => defined('B6A00A9C9E69A43A7A4A529A1F1720F1') ? B6A00A9C9E69A43A7A4A529A1F1720F1 : env('DB_DATABASE', 'forge'),
+            // 'username' => defined('B92DA7D919A2A25E7E58FFC9A388B4B6') ? B92DA7D919A2A25E7E58FFC9A388B4B6 : env('DB_USERNAME', 'forge'),
+            // 'password' => defined('AC29039EB1FC603EE31B1D8BBCFA5953') ? AC29039EB1FC603EE31B1D8BBCFA5953 : env('DB_PASSWORD', ''),
+            // 'unix_socket' => env('DB_SOCKET', ''),
+            // 'charset' => env('DB_CHARSET', 'utf8mb4'),
+            // 'collation' => env('DB_COLLATION', 'utf8mb4_unicode_ci'),
+            // 'prefix' => '',
+            // 'prefix_indexes' => true,
+            // 'strict' => true,
+            // 'engine' => 'InnoDB',
+            // 'options' => extension_loaded('pdo_mysql') ? array_filter([
+                // PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+            // ]) : [],
+        // ],
+
         'kinghost' => [
-            'driver' => defined('C7B5116B46AE0B81CE9BDF2D66EA90E6') ? C7B5116B46AE0B81CE9BDF2D66EA90E6 : env('DB_CONNECTION', 'mysql'),
-            'url' => env('DB_URL'),
-            'host' => defined('BD93DC1551A50338B79A83F7AD2DED9F') ? BD93DC1551A50338B79A83F7AD2DED9F : env('DB_HOST', '127.0.0.1'),
-            'port' => defined('D9FCE34569364C3489C63C7EDABA1066') ? D9FCE34569364C3489C63C7EDABA1066 : env('DB_PORT', '3306'),
-            'database' => defined('B6A00A9C9E69A43A7A4A529A1F1720F1') ? B6A00A9C9E69A43A7A4A529A1F1720F1 : env('DB_DATABASE', 'forge'),
-            'username' => defined('B92DA7D919A2A25E7E58FFC9A388B4B6') ? B92DA7D919A2A25E7E58FFC9A388B4B6 : env('DB_USERNAME', 'forge'),
-            'password' => defined('AC29039EB1FC603EE31B1D8BBCFA5953') ? AC29039EB1FC603EE31B1D8BBCFA5953 : env('DB_PASSWORD', ''),
-            'unix_socket' => env('DB_SOCKET', ''),
-            'charset' => env('DB_CHARSET', 'utf8mb4'),
-            'collation' => env('DB_COLLATION', 'utf8mb4_unicode_ci'),
+            // 'driver' => 'mysql',
+            'driver' => C7B5116B46AE0B81CE9BDF2D66EA90E6 ,
+            'url' => env('KINGHOST_DATABASE_URL'),
+            'host' => env('KINGHOST_DB_HOST', BD93DC1551A50338B79A83F7AD2DED9F ),
+            'port' => env('KINGHOST_DB_PORT', '3306'),
+            'database' => env('KINGHOST_DB_DATABASE', 'habilidade07'),
+            'username' => env('KINGHOST_DB_USERNAME', 'habilida07_add4'),
+            'password' => env('KINGHOST_DB_PASSWORD', 'Mi5tEri0'),
+            'unix_socket' => env('KINGHOST_DB_SOCKET', ''),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
             'prefix' => '',
             'prefix_indexes' => true,
             'strict' => true,
-            'engine' => 'InnoDB',
+            'engine' => null,
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],

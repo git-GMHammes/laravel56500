@@ -12,7 +12,10 @@ RUN usermod -u 1000 www-data && groupmod -g 1000 www-data
 
 WORKDIR /var/www/html
 
-RUN chown -R www-data:www-data /var/www/html
+RUN chown -R www-data:www-data /var/www/html \
+    && mkdir -p /var/www/.config /var/www/.composer \
+    && chown -R www-data:www-data /var/www/.config /var/www/.composer \
+    && chmod -R 755 /var/www/.config /var/www/.composer
 
 USER www-data
 

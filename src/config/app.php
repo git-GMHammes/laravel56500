@@ -53,7 +53,7 @@ return [
     |
     */
 
-    'url' => env('APP_URL', 'http://localhost'),
+    'url' => env('APP_URL', 'http://localhost:56500'),
 
     /*
     |--------------------------------------------------------------------------
@@ -98,7 +98,7 @@ return [
 
     'cipher' => 'AES-256-CBC',
 
-    'key' => env('APP_KEY'),
+    'key' => env('APP_KEY', 'base64:ojr4h44+kjLtI9k+gvOxX5Zdukx6SB4cODHclHx3mXA='),
 
     'previous_keys' => [
         ...array_filter(
